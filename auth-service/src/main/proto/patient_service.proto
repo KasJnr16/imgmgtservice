@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "patient";
+option java_outer_classname = "PatientServiceOuterClass";
+
+
+service PatientService {
+  rpc CreatePatientAccount (PatientRequest) returns (PatientResponse);
+}
+
+message PatientRequest {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+  string address = 4;
+  string dateOfBirth = 5;
+  string registeredDate = 6;
+}
+
+message PatientResponse {
+  string email = 1;
+  string status = 2;
+}

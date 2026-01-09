@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "medicalstaff";
+option java_outer_classname = "MedicalStaffServiceOuterClass";
+
+package medicalstaff;
+
+// --- Request message to create a medical staff ---
+message MedicalStaffRequest {
+  string id = 1;             // Auth user ID
+  string name = 2;
+  string email = 3;
+  string address = 4;
+  string dateOfBirth = 5;    // Format: YYYY-MM-DD
+  string registeredDate = 6; // Format: YYYY-MM-DD
+}
+
+// --- Response message after creating a medical staff ---
+message MedicalStaffResponse {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+}
+
+// --- gRPC service for medical staff ---
+service MedicalStaffService {
+  // Create a new medical staff
+  rpc CreateMedicalStaff(MedicalStaffRequest) returns (MedicalStaffResponse);
+}
