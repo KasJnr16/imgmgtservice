@@ -20,6 +20,15 @@ spring:
           filters:
             - StripPrefix=1
             - JwtValidation
+
+        # Route for /api/billing/** to billing-service
+        - id: billing-service-route
+          uri: http://billing-service:4001
+          predicates:
+            - Path=/api/billing/**
+          filters:
+            - StripPrefix=1
+            - JwtValidation
         
         # Route for /api/patients/** to patient-service
         - id: medical-staff-service-route
@@ -44,6 +53,13 @@ spring:
             - Path=/api-docs/auth
           filters:
             - RewritePath=/api-docs/auth,/v3/api-docs
+
+        - id: api-docs-billing-route
+          uri: http://billing-service:4001
+          predicates:
+            - Path=/api-docs/billing
+          filters:
+            - RewritePath=/api-docs/billing,/v3/api-docs
         
         - id: api-docs-medical-staff-route
           uri: http://medical-staff-service:4006
