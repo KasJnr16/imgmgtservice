@@ -64,98 +64,6 @@ services:
       - backend
     restart: unless-stopped
 
-  auth-service:
-    container_name: auth-service
-    build: ./auth-service/
-    depends_on:
-      - auth-postgres
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://auth-postgres:5432/auth_db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: admin
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_SQL_INIT_MODE: always
-      JWT_SECRET: dGhpcy1pcy1hLXZlcnktc2VjdXJlLTMyLWJ5dGUtc2VjcmV0
-      MEDICAL_STAFF_SERVICE_ADDRESS: medical-staff-service
-      MEDICAL_STAFF_SERVICE_GRPC_PORT: 9003
-      PATIENT_SERVICE_ADDRESS: patient-service
-      PATIENT_SERVICE_GRPC_PORT: 9002
-    networks:
-      - backend
-
-  patient-service:
-    container_name: patient-service
-    build: ./patient-service/
-    ports:
-      # Remove later for internal communication only
-      - "4000:4000"
-      - "9002:9002"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://patient-postgres:5432/patient_db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: admin
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      BILLING_SERVICE_ADDRESS: billing-service
-      BILLING_SERVICE_GRPC_PORT: 9001
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    depends_on:
-      - patient-postgres
-    networks:
-      - backend
-    
-  medical-staff-service:
-    container_name: medical-staff-service
-    build: ./medical-staff-service/
-    ports:
-      # Remove later for internal communication only
-      - "4006:4006"
-      - "9003:9003"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://medical-staff-postgres:5432/medical_staff_db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: admin
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-    depends_on:
-      - medical-staff-postgres
-    networks:
-      - backend
-    
-  billing-service:
-    container_name: billing-service
-    build: ./billing-service/
-    ports:
-      - "4001:4001"
-      - "9001:9001"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://billing-postgres:5432/billing_db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: admin
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-    networks:
-      - backend
-
-  # analytics-service:
-  #   container_name: analytics-service
-  #   build: ./analytics-service/
-  #   ports: 
-  #     - "4002:4002"
-  #   environment:
-  #     SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-  #   networks:
-  #     - backend 
-  #   depends_on:
-  #     - kafka 
-  
-  api-gateway:
-    container_name: api-gateway
-    build: ./api-gateway/
-    ports:
-      - "4004:4004"
-    networks:
-      - backend
-    environment:
-      AUTH_SERVICE_URL: http://auth-service:4005
-    
   kafka:
     container_name: kafka
     image: confluentinc/cp-kafka:7.5.0
@@ -186,6 +94,201 @@ services:
     volumes:
       - kafka_data:/var/lib/kafka/data
 
+  # Billing Service - No dependencies on other services
+  billing-service:
+    container_name: billing-service
+    build: ./billing-service/
+    ports:
+      - "4001:4001"
+      - "9001:9001"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://billing-postgres:5432/billing_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      GRPC_SERVER_PORT: 9001
+      SERVER_PORT: 4001
+    depends_on:
+      - billing-postgres
+    networks:
+      - backend
+
+  # Patient Service - Depends on Billing Service (calls billing gRPC)
+  patient-service:
+    container_name: patient-service
+    build: ./patient-service/
+    ports:
+      - "4000:4000"
+      - "9002:9002"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://patient-postgres:5432/patient_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      BILLING_SERVICE_ADDRESS: billing-service
+      BILLING_SERVICE_GRPC_PORT: 9001
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      GRPC_SERVER_PORT: 9002
+      SERVER_PORT: 4000
+    depends_on:
+      - patient-postgres
+      - billing-service  # Patient calls Billing
+      - kafka
+    networks:
+      - backend
+
+  # Auth Service - Depends on Patient Service (calls patient gRPC)
+  auth-service:
+    container_name: auth-service
+    build: ./auth-service/
+    ports:
+      - "4005:4005"
+      - "9003:9003"
+    depends_on:
+      - auth-postgres
+      - patient-service  # Auth calls Patient
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://auth-postgres:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_SQL_INIT_MODE: always
+      JWT_SECRET: dGhpcy1pcy1hLXZlcnktc2VjdXJlLTMyLWJ5dGUtc2VjcmV0
+      PATIENT_SERVICE_ADDRESS: patient-service
+      PATIENT_SERVICE_GRPC_PORT: 9002
+      GRPC_SERVER_PORT: 9003
+      SERVER_PORT: 4005
+    networks:
+      - backend
+
+  # Medical Staff Service - Depends on Auth Service (calls auth gRPC)
+  medical-staff-service:
+    container_name: medical-staff-service
+    build: ./medical-staff-service/
+    ports:
+      - "4006:4006"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://medical-staff-postgres:5432/medical_staff_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      AUTH_SERVICE_ADDRESS: auth-service
+      AUTH_SERVICE_GRPC_PORT: 9003
+      SERVER_PORT: 4006
+    depends_on:
+      - medical-staff-postgres
+      - auth-service  # Medical Staff calls Auth
+    networks:
+      - backend
+
+  # API Gateway - Depends on all services
+  api-gateway:
+    container_name: api-gateway
+    build: ./api-gateway/
+    ports:
+      - "4004:4004"
+    networks:
+      - backend
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:4005
+      PATIENT_SERVICE_URL: http://patient-service:4000
+      BILLING_SERVICE_URL: http://billing-service:4001
+      MEDICAL_STAFF_SERVICE_URL: http://medical-staff-service:4006
+      IMAGE_SERVICE_URL: http://image-service:4007  # Add this
+      ANALYTICS_SERVICE_URL: http://analytics-service:4002  # Add this
+      SERVER_PORT: 4004
+    depends_on:
+      - auth-service
+      - patient-service
+      - billing-service
+      - medical-staff-service
+      - image-service  # Add this
+
+  # analytics-service:
+  #   container_name: analytics-service
+  #   build: ./analytics-service/
+  #   ports: 
+  #     - "4002:4002"
+  #   environment:
+  #     SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  #   networks:
+  #     - backend 
+  #   depends_on:
+  #     - kafka 
+
+  image-postgres:
+    container_name: image-db
+    image: postgres:15
+    ports:
+      - "5004:5432"
+    environment:
+      POSTGRES_DB: image_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - image_postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    restart: unless-stopped
+
+  image-service:
+    container_name: image-service
+    build: ./image-service/
+    ports:
+      - "4007:4007"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://image-postgres:5432/image_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SERVER_PORT: 4007
+      IMAGE_STORAGE_LOCATION: /app/images
+      SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE: 50MB
+      SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE: 50MB
+    depends_on:
+      - image-postgres
+    networks:
+      - backend
+    volumes:
+      - image_storage:/app/images
+
+
+  analytics-postgres:
+    container_name: analytics-db
+    image: postgres:15
+    ports:
+      - "5005:5432"
+    environment:
+      POSTGRES_DB: analytics_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - analytics_postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    restart: unless-stopped
+
+  analytics-service:
+    container_name: analytics-service
+    build: ./analytics-service/
+    ports:
+      - "4002:4002"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://analytics-postgres:5432/analytics_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      IMAGE_SERVICE_URL: http://image-service:4007
+      SERVER_PORT: 4002
+    depends_on:
+      - analytics-postgres
+      - kafka
+    networks:
+      - backend
+
 networks:
   backend:
     driver: bridge
@@ -195,4 +298,7 @@ volumes:
   auth_postgres_data:
   medical_staff_postgres_data:
   billing_postgres_data:
+  image_postgres_data:  # Add this
+  image_storage:  # Add this for persistent image storage
   kafka_data:
+  analytics_postgres_data:

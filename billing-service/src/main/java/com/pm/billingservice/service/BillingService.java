@@ -32,6 +32,15 @@ public class BillingService {
         BigDecimal amount,
         LocalDateTime dueDate
     ) {
+        return createBilling(patientId, amount, dueDate, "Medical Service");
+    }
+
+    public Billing createBilling(
+        UUID patientId,
+        BigDecimal amount,
+        LocalDateTime dueDate,
+        String description
+    ) {
         BillingAccount account = billingAccountRepository.findByPatientId(patientId)
             .orElseThrow(() -> new IllegalArgumentException(
                 "Billing account not found for patient: " + patientId));
@@ -41,6 +50,7 @@ public class BillingService {
         billing.setAmountDue(amount);
         billing.setDueDate(dueDate);
         billing.setPaid(false);
+        billing.setDescription(description);
 
         return billingRepository.save(billing);
     }

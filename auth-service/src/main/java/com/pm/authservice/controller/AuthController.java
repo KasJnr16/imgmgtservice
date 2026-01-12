@@ -3,7 +3,6 @@ package com.pm.authservice.controller;
 import com.pm.authservice.dto.LoginRequestDTO;
 import com.pm.authservice.dto.LoginResponseDTO;
 import com.pm.authservice.dto.SignupRequestDTO;
-import com.pm.authservice.dto.SignupResponseDTO;
 import com.pm.authservice.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import java.util.Optional;
@@ -37,19 +36,6 @@ public class AuthController {
 
     String token = tokenOptional.get();
     return ResponseEntity.ok(new LoginResponseDTO(token));
-  }
-
-  @PostMapping("/signup-staff")
-  @Operation(summary = "Create a new staff user")
-  public ResponseEntity<SignupResponseDTO> signupStaff(
-      @RequestBody SignupRequestDTO signupRequestDTO) {
-
-    Optional<SignupResponseDTO> responseDTO = authService.signupStaff(signupRequestDTO);
-    if (responseDTO.isEmpty()) {
-      return ResponseEntity.status(HttpStatus.CONFLICT).build();
-    }
-
-    return ResponseEntity.ok(responseDTO.get());
   }
 
   @Operation(summary = "Create a new user and generate token")

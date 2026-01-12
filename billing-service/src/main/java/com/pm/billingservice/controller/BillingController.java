@@ -1,5 +1,6 @@
 package com.pm.billingservice.controller;
 
+import com.pm.billingservice.dto.BillingAccountResponseDTO;
 import com.pm.billingservice.dto.CreateBillingRequestDTO;
 import com.pm.billingservice.model.Billing;
 import com.pm.billingservice.model.BillingAccount;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+
 @RequestMapping("/billing")
 public class BillingController {
 
@@ -55,7 +57,7 @@ public class BillingController {
         @PathVariable UUID patientId
     ) {
         try {
-            BillingAccount account =
+            BillingAccountResponseDTO account =
                 billingAccountService.getAccountByPatientId(patientId);
 
             return ResponseEntity.ok(account);
@@ -75,7 +77,8 @@ public class BillingController {
             Billing billing = billingService.createBilling(
                 request.getPatientId(),
                 request.getAmount(),
-                request.getDueDate()
+                request.getDueDate(),
+                request.getDescription()
             );
 
             return ResponseEntity.status(HttpStatus.CREATED).body(billing);

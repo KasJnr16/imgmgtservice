@@ -9,6 +9,26 @@ public class MedicalStaffRequestDTO {
 
   private java.util.UUID id;
 
+  private String role; 
+   
+  private String password;
+
+  public String getRole() {
+    return role;
+  }
+
+  public void setRole(String role) {
+    this.role = role;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
+  }
+
   public java.util.UUID getId() {
     return id;
   }

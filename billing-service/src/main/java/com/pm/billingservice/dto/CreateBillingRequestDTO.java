@@ -18,6 +18,9 @@ public class CreateBillingRequestDTO {
     @NotNull
     private LocalDateTime dueDate;
 
+    @NotNull
+    private String description;
+
     public UUID getPatientId() {
         return patientId;
     }
@@ -40,6 +43,14 @@ public class CreateBillingRequestDTO {
 
     public void setDueDate(LocalDateTime dueDate) {
         this.dueDate = dueDate;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
 

@@ -1,5 +1,6 @@
 package com.pm.billingservice.service;
 
+import com.pm.billingservice.dto.BillingAccountResponseDTO;
 import com.pm.billingservice.model.BillingAccount;
 import com.pm.billingservice.repository.BillingAccountRepository;
 import java.time.LocalDateTime;
@@ -31,9 +32,18 @@ public class BillingAccountService {
         return billingAccountRepository.save(account);
     }
 
-    public BillingAccount getAccountByPatientId(UUID patientId) {
-        return billingAccountRepository.findByPatientId(patientId)
+    public BillingAccountResponseDTO getAccountByPatientId(UUID patientId) {
+        BillingAccount account = billingAccountRepository.findByPatientId(patientId)
             .orElseThrow(() -> new IllegalArgumentException(
                 "Billing account not found for patient: " + patientId));
+        
+        return new BillingAccountResponseDTO(
+            account.getId(),
+            account.getPatientId(),
+            account.getAccountName(),
+            account.getBalance(),
+            account.isSettled(),
+            account.getCreatedAt()
+        );
     }
 }

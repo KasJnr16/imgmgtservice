@@ -1,6 +1,12 @@
 server:
   port: 4004 # Gateway listens on port 4004
 
+
+auth:
+  service:
+    url: http://localhost:4005
+
+
 spring:
   cloud:
     gateway:
@@ -17,6 +23,15 @@ spring:
           uri: http://patient-service:4000
           predicates:
             - Path=/api/patients/**
+          filters:
+            - StripPrefix=1
+            - JwtValidation
+
+        # Route for /api/images/** to image-service
+        - id: image-service-route
+          uri: http://image-service:4007
+          predicates:
+            - Path=/api/images/**
           filters:
             - StripPrefix=1
             - JwtValidation
@@ -39,6 +54,15 @@ spring:
             - StripPrefix=1
             - JwtValidation
 
+        # Route for /api/analytics/** to analytics-service
+        - id: analytics-service-route
+          uri: http://analytics-service:4002
+          predicates:
+            - Path=/api/analytics/**
+          filters:
+            - StripPrefix=1
+            - JwtValidation
+
         # Route for /api/docs/patients to patient-service /v3/api-docs
         - id: api-docs-patient-route
           uri: http://patient-service:4000
@@ -54,6 +78,13 @@ spring:
           filters:
             - RewritePath=/api-docs/auth,/v3/api-docs
 
+        - id: api-docs-analytics-route
+          uri: http://analytics-service:4002
+          predicates:
+            - Path=/api-docs/analytics
+          filters:
+            - RewritePath=/api-docs/analytics,/v3/api-docs
+
         - id: api-docs-billing-route
           uri: http://billing-service:4001
           predicates:
@@ -67,3 +98,10 @@ spring:
             - Path=/api-docs/medical-staff
           filters:
             - RewritePath=/api-docs/medical-staff,/v3/api-docs
+
+        - id: api-docs-image-route
+          uri: http://image-service:4007
+          predicates:
+            - Path=/api-docs/image
+          filters:
+            - RewritePath=/api-docs/image,/v3/api-docs

@@ -37,6 +37,7 @@ public class MedicalStaffMapper {
         }
 
         MedicalStaff medicalStaff = new MedicalStaff();
+        medicalStaff.setId(requestDTO.getId());
         medicalStaff.setName(requestDTO.getName());
         medicalStaff.setAddress(requestDTO.getAddress());
         medicalStaff.setEmail(requestDTO.getEmail());

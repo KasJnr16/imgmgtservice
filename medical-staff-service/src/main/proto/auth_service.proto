@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "authservice";
+option java_outer_classname = "AuthServiceOuterClass";
+
+package authservice;
+
+// --- Request message to create a medical staff ---
+message AuthServiceRequest {   
+  string email = 1;
+  string password = 2;
+  string role = 3;
+}
+
+// --- Response message after creating a medical staff ---
+message AuthServiceResponse {
+  string id = 1;
+  string status = 2;
+}
+
+// --- gRPC service for medical staff ---
+service AuthService {
+  // Create a new medical staff
+  rpc CreateMedicalStaff(AuthServiceRequest) returns (AuthServiceResponse);
+}

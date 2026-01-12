@@ -1,17 +1,11 @@
 package com.pm.billingservice.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 
 @Entity
 public class Billing {
@@ -22,6 +16,7 @@ public class Billing {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "billing_account_id", nullable = false)
+    @JsonIgnoreProperties({"billings"})
     private BillingAccount billingAccount;
 
     @Column(nullable = false)
@@ -30,7 +25,16 @@ public class Billing {
     @Column(nullable = false)
     private LocalDateTime dueDate;
 
-    private boolean isPaid;
+    @Column(name = "paid", nullable = false)
+    private boolean paid = false;
+
+    @Column(nullable = false)
+    private String description;
+
+    // Getters and Setters
+    public UUID getId() {
+        return id;
+    }
 
     public BillingAccount getBillingAccount() {
         return billingAccount;
@@ -56,11 +60,19 @@ public class Billing {
         this.dueDate = dueDate;
     }
 
-    public boolean isPaid() {
-        return isPaid;
+    public boolean isPaid() {  // Getter still uses "is" prefix - this is fine
+        return paid;
     }
 
-    public void setPaid(boolean isPaid) {
-        this.isPaid = isPaid;
-    }    
+    public void setPaid(boolean paid) {  // Setter uses "set" + field name
+        this.paid = paid;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

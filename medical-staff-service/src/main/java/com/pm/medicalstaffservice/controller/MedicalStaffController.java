@@ -46,7 +46,7 @@ public class MedicalStaffController {
       @RequestBody MedicalStaffRequestDTO medicalStaffRequestDTO) {
 
     MedicalStaffResponseDTO medicalStaffResponseDTO =
-        medicalStaffService.createMedicalStaff(medicalStaffRequestDTO);
+        medicalStaffService.registerUserInAuthService(medicalStaffRequestDTO);
 
     return ResponseEntity.ok().body(medicalStaffResponseDTO);
   }

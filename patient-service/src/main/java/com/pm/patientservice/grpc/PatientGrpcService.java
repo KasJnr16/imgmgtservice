@@ -9,14 +9,16 @@ import com.pm.patientservice.dto.PatientRequestDTO;
 import com.pm.patientservice.service.PatientService;
 
 import io.grpc.stub.StreamObserver;
+import net.devh.boot.grpc.server.service.GrpcService;
 
-public class PatientServiceGrpcServer extends PatientServiceImplBase {
+@GrpcService
+public class PatientGrpcService extends PatientServiceImplBase {
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory
-            .getLogger(PatientServiceGrpcServer.class);
+            .getLogger(PatientGrpcService.class);
     private final PatientService patientService;
 
-    public PatientServiceGrpcServer(PatientService patientService) {
+    public PatientGrpcService(PatientService patientService) {
         this.patientService = patientService;
     }
 

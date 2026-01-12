@@ -8,6 +8,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
+import java.util.UUID;
+
 import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -23,9 +25,10 @@ public class JwtUtil {
     this.secretKey = Keys.hmacShaKeyFor(keyBytes);
   }
 
-  public String generateToken(String email, String role) {
+  public String generateToken(UUID id, String email, String role) {
     return Jwts.builder()
         .subject(email)
+        .claim("id", id.toString())
         .claim("role", role)
         .issuedAt(new Date())
         .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 *10)) // 10 hours
