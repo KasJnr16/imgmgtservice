@@ -51,7 +51,26 @@ public class MedicalImageController {
         return ResponseEntity.ok(service.getImagesByPatient(patientId));
     }
 
-  @GetMapping("/{imageId}/download")
+  @GetMapping("/{imageId}/view")
+    @Operation(summary = "View a medical image by ID")
+    public ResponseEntity<Resource> viewImage(@PathVariable UUID imageId) {
+        try {
+            MedicalImage image = service.getImageById(imageId);
+            Resource resource = service.getResourceForImage(image);
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(image.getContentType()))
+                    // NO CONTENT_DISPOSITION HEADER - this is the key!
+                    .body(resource);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/{imageId}/download")
 @Operation(summary = "Download a medical image by ID")
 public ResponseEntity<Resource> downloadImage(@PathVariable UUID imageId) {
     try {

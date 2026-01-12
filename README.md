@@ -29,8 +29,10 @@ Open your **Terminal / Command Prompt** and run:
 
 ```bash
 cd Desktop
-git clone <BACKEND_REPO_URL>
-git clone <FRONTEND_REPO_URL>
+
+git clone https://github.com/KasJnr16/imgmgtservice.git
+
+git clone https://github.com/KasJnr16/imgmgtservice-frontend.git
 ```
 
 This will download the backend and frontend source code into folders on your Desktop.
@@ -39,7 +41,7 @@ This will download the backend and frontend source code into folders on your Des
 
 # Backend Setup
 
-1. Open the **backend project folder** in **VS Code**.
+1. Open the **imgmgtservice project folder** in **VS Code**.
 2. Locate the `docker-compose.yml` file.
 3. If it does not exist, create one in the project root and paste the following configuration:
 
@@ -313,7 +315,7 @@ docker compose up --build
 
 # Frontend Setup
 
-1. Open the `ImgMgtSys-Frontend` folder in **VS Code**.
+1. Open the `imgmgtservice-frontend` folder in **VS Code**.
 2. Install dependencies:
 
 ```bash
