@@ -149,4 +149,66 @@ public class BillingController {
                 .body("Failed to check account settlement status");
         }
     }
+
+    @PostMapping("/scan-charge")
+    @Operation(summary = "Create a billing charge for medical scan")
+    public ResponseEntity<?> createScanCharge(@RequestBody ScanChargeRequest request) {
+        try {
+            // Create billing charge for scan
+            CreateBillingRequestDTO billingRequest = new CreateBillingRequestDTO();
+            billingRequest.setPatientId(UUID.fromString(request.getPatientId()));
+            billingRequest.setAmount(java.math.BigDecimal.valueOf(request.getAmount()));
+            billingRequest.setDueDate(java.time.LocalDateTime.now().plusDays(30));
+            billingRequest.setDescription(request.getDescription());
+
+            Billing billing = billingService.createBilling(
+                billingRequest.getPatientId(),
+                billingRequest.getAmount(),
+                billingRequest.getDueDate(),
+                billingRequest.getDescription()
+            );
+            
+            // Return charge ID
+            return ResponseEntity.ok(new ScanChargeResponse(billing.getId().toString()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Failed to create scan charge: " + e.getMessage());
+        }
+    }
+}
+
+// DTOs for scan charge
+class ScanChargeRequest {
+    private String patientId;
+    private String scanAppointmentId;
+    private String scanType;
+    private Double amount;
+    private String description;
+
+    // Getters and setters
+    public String getPatientId() { return patientId; }
+    public void setPatientId(String patientId) { this.patientId = patientId; }
+
+    public String getScanAppointmentId() { return scanAppointmentId; }
+    public void setScanAppointmentId(String scanAppointmentId) { this.scanAppointmentId = scanAppointmentId; }
+
+    public String getScanType() { return scanType; }
+    public void setScanType(String scanType) { this.scanType = scanType; }
+
+    public Double getAmount() { return amount; }
+    public void setAmount(Double amount) { this.amount = amount; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+}
+
+class ScanChargeResponse {
+    private String chargeId;
+
+    public ScanChargeResponse(String chargeId) {
+        this.chargeId = chargeId;
+    }
+
+    public String getChargeId() { return chargeId; }
+    public void setChargeId(String chargeId) { this.chargeId = chargeId; }
 }

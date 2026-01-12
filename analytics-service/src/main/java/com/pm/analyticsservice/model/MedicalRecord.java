@@ -46,6 +46,12 @@ public class MedicalRecord {
     private Integer respiratoryRate;
     private Double oxygenSaturation;
     
+    @Column(name = "scan_requested")
+    private Boolean scanRequested = false;
+    
+    @Column(name = "scan_request_notes", columnDefinition = "TEXT")
+    private String scanRequestNotes;
+    
     @Column(nullable = false)
     private LocalDateTime recordDate;
     
