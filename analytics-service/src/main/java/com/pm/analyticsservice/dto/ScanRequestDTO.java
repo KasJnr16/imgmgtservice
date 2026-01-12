@@ -1,6 +1,7 @@
-package com.pm.analytics.dto;
+package com.pm.analyticsservice.dto;
 
-import com.pm.analytics.model.enums.ScanType;
+import com.pm.analyticsservice.model.enums.ScanType;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -22,6 +23,8 @@ public class ScanRequestDTO {
 
     private String notes;
 
+    private String radiologistId;
+
     // Constructors
     public ScanRequestDTO() {}
 
@@ -31,6 +34,15 @@ public class ScanRequestDTO {
         this.doctorId = doctorId;
         this.scanType = scanType;
         this.scanReason = scanReason;
+    }
+
+    public ScanRequestDTO(String medicalRecordId, String patientId, String doctorId, ScanType scanType, String scanReason, String radiologistId) {
+        this.medicalRecordId = medicalRecordId;
+        this.patientId = patientId;
+        this.doctorId = doctorId;
+        this.scanType = scanType;
+        this.scanReason = scanReason;
+        this.radiologistId = radiologistId;
     }
 
     // Getters and Setters
@@ -80,5 +92,13 @@ public class ScanRequestDTO {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public String getRadiologistId() {
+        return radiologistId;
+    }
+
+    public void setRadiologistId(String radiologistId) {
+        this.radiologistId = radiologistId;
     }
 }

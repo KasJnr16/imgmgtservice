@@ -1,4 +1,4 @@
-package com.pm.analytics.service;
+package com.pm.analyticsservice.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

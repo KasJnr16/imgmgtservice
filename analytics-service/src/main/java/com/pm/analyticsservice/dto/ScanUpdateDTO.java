@@ -1,6 +1,7 @@
-package com.pm.analytics.dto;
+package com.pm.analyticsservice.dto;
 
-import com.pm.analytics.model.enums.AppointmentStatus;
+import com.pm.analyticsservice.model.enums.AppointmentStatus;
+
 import jakarta.validation.constraints.NotNull;
 
 public class ScanUpdateDTO {

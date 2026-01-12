@@ -10,19 +10,20 @@ import java.util.UUID;
 
 @Entity
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(name = "billing_account")
 public class BillingAccount {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, name = "patient_id")
     private UUID patientId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "account_name")
     private String accountName;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "created_at")
     private LocalDateTime createdAt;
 
     // Computed fields (not stored in database)

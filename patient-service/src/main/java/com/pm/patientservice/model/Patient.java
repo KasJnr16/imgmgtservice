@@ -3,12 +3,14 @@ package com.pm.patientservice.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
+@Table(name = "patient")
 public class Patient {
   @Id
   private UUID id;
@@ -25,9 +27,11 @@ public class Patient {
   private String address;
 
   @NotNull
+  @Column(name = "date_of_birth")
   private LocalDate dateOfBirth;
 
   @NotNull
+  @Column(name = "registered_date")
   private LocalDate registeredDate;
 
   public UUID getId() {

@@ -1,9 +1,10 @@
-package com.pm.analytics.controller;
+package com.pm.analyticsservice.controller;
 
-import com.pm.analytics.dto.ScanAppointmentDTO;
-import com.pm.analytics.dto.ScanRequestDTO;
-import com.pm.analytics.dto.ScanUpdateDTO;
-import com.pm.analytics.service.ScanAppointmentService;
+import com.pm.analyticsservice.dto.ScanAppointmentDTO;
+import com.pm.analyticsservice.dto.ScanRequestDTO;
+import com.pm.analyticsservice.dto.ScanUpdateDTO;
+import com.pm.analyticsservice.service.ScanAppointmentService;
+
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/analytics/scan-appointments")
+@RequestMapping("/analytics/scan-appointments")
 @CrossOrigin(origins = "*")
 public class ScanAppointmentController {
 
@@ -91,7 +92,7 @@ public class ScanAppointmentController {
             @PathVariable UUID id,
             @RequestParam String radiologistId) {
         ScanUpdateDTO update = new ScanUpdateDTO();
-        update.setStatus(com.pm.analytics.model.enums.AppointmentStatus.IN_PROGRESS);
+        update.setStatus(com.pm.analyticsservice.model.enums.AppointmentStatus.IN_PROGRESS);
         update.setRadiologistId(radiologistId);
         
         ScanAppointmentDTO appointment = scanAppointmentService.updateAppointment(id, update, radiologistId);
@@ -103,7 +104,7 @@ public class ScanAppointmentController {
             @PathVariable UUID id,
             @RequestParam String radiologistId) {
         ScanUpdateDTO update = new ScanUpdateDTO();
-        update.setStatus(com.pm.analytics.model.enums.AppointmentStatus.SCHEDULED);
+        update.setStatus(com.pm.analyticsservice.model.enums.AppointmentStatus.SCHEDULED);
         update.setRadiologistId(radiologistId);
         
         ScanAppointmentDTO appointment = scanAppointmentService.updateAppointment(id, update, radiologistId);

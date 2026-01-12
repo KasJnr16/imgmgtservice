@@ -106,6 +106,8 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: admin
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION: "true"
+      SPRING_SQL_INIT_MODE: always
       GRPC_SERVER_PORT: 9001
       SERVER_PORT: 4001
     depends_on:
@@ -125,6 +127,8 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: admin
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION: "true"
+      SPRING_SQL_INIT_MODE: always
       BILLING_SERVICE_ADDRESS: billing-service
       BILLING_SERVICE_GRPC_PORT: 9001
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
@@ -172,6 +176,8 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: admin
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION: "true"
+      SPRING_SQL_INIT_MODE: always
       AUTH_SERVICE_ADDRESS: auth-service
       AUTH_SERVICE_GRPC_PORT: 9003
       SERVER_PORT: 4006
@@ -203,18 +209,6 @@ services:
       - billing-service
       - medical-staff-service
       - image-service  # Add this
-
-  # analytics-service:
-  #   container_name: analytics-service
-  #   build: ./analytics-service/
-  #   ports: 
-  #     - "4002:4002"
-  #   environment:
-  #     SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-  #   networks:
-  #     - backend 
-  #   depends_on:
-  #     - kafka 
 
   image-postgres:
     container_name: image-db
@@ -252,7 +246,6 @@ services:
       - backend
     volumes:
       - image_storage:/app/images
-
 
   analytics-postgres:
     container_name: analytics-db
@@ -298,7 +291,8 @@ volumes:
   auth_postgres_data:
   medical_staff_postgres_data:
   billing_postgres_data:
-  image_postgres_data:  # Add this
-  image_storage:  # Add this for persistent image storage
+  image_postgres_data: 
+  
+  image_storage: 
   kafka_data:
   analytics_postgres_data:

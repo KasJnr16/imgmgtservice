@@ -1,11 +1,12 @@
-package com.pm.analytics.service;
+package com.pm.analyticsservice.service;
 
-import com.pm.analytics.dto.ScanAppointmentDTO;
-import com.pm.analytics.dto.ScanRequestDTO;
-import com.pm.analytics.dto.ScanUpdateDTO;
-import com.pm.analytics.model.ScanAppointment;
-import com.pm.analytics.model.enums.AppointmentStatus;
-import com.pm.analytics.repository.ScanAppointmentRepository;
+import com.pm.analyticsservice.dto.ScanAppointmentDTO;
+import com.pm.analyticsservice.dto.ScanRequestDTO;
+import com.pm.analyticsservice.dto.ScanUpdateDTO;
+import com.pm.analyticsservice.model.ScanAppointment;
+import com.pm.analyticsservice.model.enums.AppointmentStatus;
+import com.pm.analyticsservice.repository.ScanAppointmentRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -46,6 +47,11 @@ public class ScanAppointmentService {
         );
         
         appointment.setNotes(request.getNotes());
+        
+        // Set radiologist if provided
+        if (request.getRadiologistId() != null) {
+            appointment.setRadiologistId(request.getRadiologistId());
+        }
         
         ScanAppointment saved = scanAppointmentRepository.save(appointment);
         

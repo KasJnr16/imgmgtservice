@@ -1,7 +1,8 @@
-package com.pm.analytics.repository;
+package com.pm.analyticsservice.repository;
 
-import com.pm.analytics.model.ScanAppointment;
-import com.pm.analytics.model.enums.AppointmentStatus;
+import com.pm.analyticsservice.model.ScanAppointment;
+import com.pm.analyticsservice.model.enums.AppointmentStatus;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

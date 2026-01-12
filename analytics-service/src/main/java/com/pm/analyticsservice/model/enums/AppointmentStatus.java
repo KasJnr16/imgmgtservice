@@ -1,4 +1,4 @@
-package com.pm.analytics.model.enums;
+package com.pm.analyticsservice.model.enums;
 
 public enum AppointmentStatus {
     REQUESTED,
