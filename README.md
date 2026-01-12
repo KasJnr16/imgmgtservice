@@ -1,18 +1,354 @@
 ###### Copyright © 2025 Code | Original Source Code
 
-# Installation steps
+# Installation Steps
 
+## Prerequisites
 
-1. Have java installed from url:
-    This will be used to run the backend code.
-2. Have git installed from:
-    This would be used to clone the source code from Git
-3. Have docker desktop installed from:
-    This will be used to create a docker a image and container to save the working code actively running.
-4. Have VScode installed from:
-    This tool would be used to make edits to the source code
-5. Have npm installed from:
-    This tool will be used to start the frontend web service.
+Ensure the following tools are installed on your system before proceeding:
 
-# run
-git clone
+1. **Java (JDK 17+)**  
+   Required to run all backend Spring Boot services.
+
+2. **Git**  
+   Used to clone the source code repositories.
+
+3. **Docker Desktop**  
+   Used to build images and run all backend services in containers.
+
+4. **Visual Studio Code (VS Code)**  
+   Recommended editor for viewing and editing the source code.
+
+5. **Node.js & npm**  
+   Required to install dependencies and run the frontend application.
+
+---
+
+# Clone the Project
+
+Open your **Terminal / Command Prompt** and run:
+
+```bash
+cd Desktop
+git clone <BACKEND_REPO_URL>
+git clone <FRONTEND_REPO_URL>
+```
+
+This will download the backend and frontend source code into folders on your Desktop.
+
+---
+
+# Backend Setup
+
+1. Open the **backend project folder** in **VS Code**.
+2. Locate the `docker-compose.yml` file.
+3. If it does not exist, create one in the project root and paste the following configuration:
+
+```yaml
+services:
+
+  patient-postgres:
+    container_name: patient-db
+    image: postgres:15
+    environment:
+      POSTGRES_DB: patient_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - "5000:5432"
+    volumes:
+      - patient_postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    restart: unless-stopped
+
+  medical-staff-postgres:
+    container_name: medical-staff-db
+    image: postgres:15
+    environment:
+      POSTGRES_DB: medical_staff_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - "5002:5432"
+    volumes:
+      - medical_staff_postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    restart: unless-stopped
+  
+  auth-postgres:
+    container_name: auth-db
+    image: postgres:15
+    ports:
+      - "5001:5432"
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - auth_postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    restart: unless-stopped
+
+  billing-postgres:
+    container_name: billing-db
+    image: postgres:15
+    ports:
+      - "5003:5432"
+    environment:
+      POSTGRES_DB: billing_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - billing_postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    restart: unless-stopped
+
+  kafka:
+    container_name: kafka
+    image: confluentinc/cp-kafka:7.5.0
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    environment:
+      CLUSTER_ID: YSEeaP7HRy-Lhksi-Hj_Fg
+      KAFKA_NODE_ID: 0
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 0@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    networks:
+      - backend
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+
+  billing-service:
+    container_name: billing-service
+    build: ./billing-service/
+    ports:
+      - "4001:4001"
+      - "9001:9001"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://billing-postgres:5432/billing_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_SQL_INIT_MODE: always
+      GRPC_SERVER_PORT: 9001
+      SERVER_PORT: 4001
+    depends_on:
+      - billing-postgres
+    networks:
+      - backend
+
+  patient-service:
+    container_name: patient-service
+    build: ./patient-service/
+    ports:
+      - "4000:4000"
+      - "9002:9002"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://patient-postgres:5432/patient_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_SQL_INIT_MODE: always
+      BILLING_SERVICE_ADDRESS: billing-service
+      BILLING_SERVICE_GRPC_PORT: 9001
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      GRPC_SERVER_PORT: 9002
+      SERVER_PORT: 4000
+    depends_on:
+      - patient-postgres
+      - billing-service
+      - kafka
+    networks:
+      - backend
+
+  auth-service:
+    container_name: auth-service
+    build: ./auth-service/
+    ports:
+      - "4005:4005"
+      - "9003:9003"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://auth-postgres:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_SQL_INIT_MODE: always
+      JWT_SECRET: dGhpcy1pcy1hLXZlcnktc2VjdXJlLTMyLWJ5dGUtc2VjcmV0
+      PATIENT_SERVICE_ADDRESS: patient-service
+      PATIENT_SERVICE_GRPC_PORT: 9002
+      GRPC_SERVER_PORT: 9003
+      SERVER_PORT: 4005
+    depends_on:
+      - auth-postgres
+      - patient-service
+    networks:
+      - backend
+
+  medical-staff-service:
+    container_name: medical-staff-service
+    build: ./medical-staff-service/
+    ports:
+      - "4006:4006"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://medical-staff-postgres:5432/medical_staff_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_SQL_INIT_MODE: always
+      AUTH_SERVICE_ADDRESS: auth-service
+      AUTH_SERVICE_GRPC_PORT: 9003
+      SERVER_PORT: 4006
+    depends_on:
+      - medical-staff-postgres
+      - auth-service
+    networks:
+      - backend
+
+  image-postgres:
+    container_name: image-db
+    image: postgres:15
+    ports:
+      - "5004:5432"
+    environment:
+      POSTGRES_DB: image_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - image_postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  image-service:
+    container_name: image-service
+    build: ./image-service/
+    ports:
+      - "4007:4007"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://image-postgres:5432/image_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SERVER_PORT: 4007
+      IMAGE_STORAGE_LOCATION: /app/images
+    depends_on:
+      - image-postgres
+    volumes:
+      - image_storage:/app/images
+    networks:
+      - backend
+
+  analytics-postgres:
+    container_name: analytics-db
+    image: postgres:15
+    ports:
+      - "5005:5432"
+    environment:
+      POSTGRES_DB: analytics_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - analytics_postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  analytics-service:
+    container_name: analytics-service
+    build: ./analytics-service/
+    ports:
+      - "4002:4002"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://analytics-postgres:5432/analytics_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SERVER_PORT: 4002
+    depends_on:
+      - analytics-postgres
+      - kafka
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  patient_postgres_data:
+  auth_postgres_data:
+  medical_staff_postgres_data:
+  billing_postgres_data:
+  image_postgres_data:
+  analytics_postgres_data:
+  image_storage:
+  kafka_data:
+```
+
+4. Open **Docker Desktop** and confirm it is running.
+5. In the **VS Code terminal**, run:
+
+```bash
+docker compose up --build
+```
+
+6. Verify in Docker Desktop that all containers are running successfully.
+
+---
+
+# Frontend Setup
+
+1. Open the `ImgMgtSys-Frontend` folder in **VS Code**.
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Start the frontend application:
+
+```bash
+npm start
+```
+
+The frontend will open in your browser.
+
+---
+
+# Default Login Accounts
+
+All seeded accounts follow the order below:
+
+```
+Patients:
+patient1@test.com  → patient9@test.com
+Password: 123
+
+Doctors:
+doctor1@test.com   → doctor2@test.com
+Password: password123
+
+Radiologists:
+radiologist1@test.com → radiologist2@test.com
+Password: password123
+
+Admin:
+admin@test.com
+Password: password123
+```
+
